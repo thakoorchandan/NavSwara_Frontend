@@ -39,7 +39,7 @@ const Contact = () => {
             </p>
 
             <p className={`${theme === "dark" ? "text-gray-300" : "text-gray-500"} mb-2`}>
-              Careers at Forever
+              Careers at NavSwara
             </p>
 
             <p className={`${theme === "dark" ? "text-gray-300" : "text-gray-500"} mb-4`}>

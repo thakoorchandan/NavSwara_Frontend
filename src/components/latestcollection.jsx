@@ -8,7 +8,8 @@ const Latestcollection = ({theme}) => {
   const [latestProducts, setLatestProducts] = useState([]);
 
   useEffect(() => {
-    setLatestProducts(products.slice(0, 10));
+    const nonBestSellerProducts = products.filter((p) => !p.bestSeller);
+    setLatestProducts(nonBestSellerProducts.slice(0, 10));
   }, [products]);
 
 

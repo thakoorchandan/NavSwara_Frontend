@@ -20,7 +20,7 @@ const About = () => {
         <img className="w-full md:max-w-[450px]" src={assets.about_img} alt="" />
         <div className={`flex flex-col justify-center gap-6 md:w-2/4 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
           <p>
-            Forever is your go-to destination for timeless styles and quality essentials. We’re dedicated to bringing you fashion that lasts, crafted with care and designed to fit your lifestyle effortlessly.
+            NavSwara is your go-to destination for timeless styles and quality essentials. We’re dedicated to bringing you fashion that lasts, crafted with care and designed to fit your lifestyle effortlessly.
           </p>
           <p>
             Our mission is to inspire confidence through fashion, offering versatile pieces that celebrate your unique style every day.
