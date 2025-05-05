@@ -14,13 +14,13 @@ const Latestcollection = ({theme}) => {
 
   return (
     <div
-      className={`min-h-screen py-10 ${
+      className={`py-10 ${
         theme === "dark" ? "bg-gray-900 text-gray-200" : "bg-white text-gray-700"
       }`}
     >
 
       {/* Title Section */}
-      <div className="text-center py-8">
+      <div className="text-center py-8 text-3xl">
         <Title text1={"LATEST"} text2={"COLLECTIONS"} />
         <p
           className={`w-3/4 mx-auto text-xs sm:text-sm md:text-base ${
