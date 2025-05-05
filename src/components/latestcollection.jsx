@@ -15,7 +15,7 @@ const Latestcollection = ({theme}) => {
 
   return (
     <div
-      className={`py-10 ${
+      className={`pt-5 ${
         theme === "dark" ? "bg-gray-900 text-gray-200" : "bg-white text-gray-700"
       }`}
     >

@@ -14,7 +14,7 @@ const Bestseller = ({theme}) => {
 
   return (
     <div
-      className={`my-10 ${
+      className={`${
         theme === "dark" ? "bg-gray-900 text-gray-200" : "bg-white text-gray-700"
       }`}
     >
