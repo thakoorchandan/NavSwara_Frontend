@@ -57,6 +57,10 @@ import p_img52 from './p_img52.png'
 
 import logo from './logo.png'
 import hero_img from './hero_img.png'
+import saree_1 from './saree_1.png'
+import saree_backdrop from './saree_backdrop.png'
+import saree_backdrop2 from './saree_backdrop2.png'
+import saree_backdrop3 from './saree_backdrop3.png'
 import cart_icon from './cart_icon.png'
 import bin_icon from './bin_icon.png'
 import dropdown_icon from './dropdown_icon.png'
@@ -92,6 +96,10 @@ export const assets = {
     contact_img,
     razorpay_logo,
     stripe_logo,
+    saree_1,
+    saree_backdrop,
+    saree_backdrop2,
+    saree_backdrop3,
     cross_icon
 }
 

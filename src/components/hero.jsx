@@ -39,7 +39,7 @@ const Hero = ({theme}) => {
       {/* Hero Right Side */}
       <img
         className="w-full sm:w-1/2"
-        src={assets.hero_img}
+        src={assets.saree_backdrop3}
         alt="Hero"
       />
     </div>
