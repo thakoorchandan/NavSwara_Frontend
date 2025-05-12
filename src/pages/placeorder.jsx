@@ -112,30 +112,30 @@ const Placeorder = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-
-    // validate address fields
     const { fullName, line1, city, state, postalCode, country } = formData;
     if (!fullName || !line1 || !city || !state || !postalCode || !country) {
       toast.error("Fill all required address fields.");
       return;
     }
 
-    // build items
+    // build items with selectedSize & selectedColor
     const orderItems = [];
     for (const pid in cartItems) {
       for (const size in cartItems[pid]) {
         const qty = cartItems[pid][size];
         if (qty > 0) {
           const prod = products.find((p) => p._id === pid);
-          if (prod)
+          if (prod) {
             orderItems.push({
               product: pid,
               name: prod.name,
-              size,
+              selectedSize: size, // renamed
+              selectedColor: null, // placeholder, if you add color UI use prod/color state
               quantity: qty,
               unitPrice: prod.price,
               totalPrice: prod.price * qty,
             });
+          }
         }
       }
     }
@@ -144,24 +144,19 @@ const Placeorder = () => {
       return;
     }
 
-    // if new address, enforce unique type & save it
     let shippingAddress = { ...formData };
     if (selectedAddr === -1) {
-      // determine final type label
       const used = addresses.map((a) => a.type);
       if (used.includes(addressType) && addressType !== "Other") {
         toast.error(`${addressType} address already exists.`);
         return;
       }
       const typeLabel =
-        addressType === "Other"
-          ? (customType.trim() || "Other")
-          : addressType;
+        addressType === "Other" ? customType.trim() || "Other" : addressType;
       if (used.includes(typeLabel)) {
         toast.error(`An address of type "${typeLabel}" already exists.`);
         return;
       }
-      // save to DB
       try {
         await addAddress({ ...shippingAddress, type: typeLabel });
         await fetchAddresses();
@@ -169,7 +164,6 @@ const Placeorder = () => {
         return;
       }
     } else {
-      // existing, attach its type
       shippingAddress.type = addresses[selectedAddr].type;
     }
 
@@ -179,7 +173,6 @@ const Placeorder = () => {
       amount: getCartAmount() + delivery_fee,
     };
 
-    // place order
     try {
       if (method === "cod") {
         const { data } = await axios.post(
@@ -187,9 +180,8 @@ const Placeorder = () => {
           payload,
           { headers: { token } }
         );
-        if (data.success) {
-          navigate("/orders");
-        } else toast.error(data.message);
+        if (data.success) navigate("/orders");
+        else toast.error(data.message);
       } else if (method === "razorpay") {
         const { data } = await axios.post(
           `${backendUrl}/api/order/razorpay`,
@@ -204,9 +196,9 @@ const Placeorder = () => {
           payload,
           { headers: { token } }
         );
-        if (data.success && data.sessionUrl)
+        if (data.success && data.sessionUrl) {
           window.location.href = data.sessionUrl;
-        else toast.error(data.message);
+        } else throw new Error(data.message || "Stripe checkout failed");
       }
     } catch (err) {
       toast.error(err.message || "Order failed");
@@ -377,7 +369,9 @@ const Placeorder = () => {
                       name="addrType"
                       value={t}
                       checked={addressType === t}
-                      disabled={t !== "Other" && addresses.some((a) => a.type === t)}
+                      disabled={
+                        t !== "Other" && addresses.some((a) => a.type === t)
+                      }
                       onChange={() => setAddressType(t)}
                       className="hidden"
                     />
