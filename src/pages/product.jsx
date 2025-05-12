@@ -1,110 +1,171 @@
-import {useContext, useEffect, useState } from 'react'
-import { useParams} from 'react-router-dom'
-import {ShopContext} from '../context/shopcontext'
-import { assets } from '../assets/assets';
-import Relatedproducts from '../components/relatedproducts';
+// src/pages/Product.jsx
+import { useContext, useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { ShopContext } from "../context/shopcontext";
+import { assets } from "../assets/assets";
+import Relatedproducts from "../components/relatedproducts";
 
 const Product = () => {
-  const {productId} = useParams();
-  const {products,currency,addToCart} = useContext(ShopContext);
-  const [productData, setProductData] = useState(false);
-  const [image, setImage] = useState('')
-  const [size,setSize] = useState('')
+  const { productId } = useParams();
+  const { products, currency, addToCart } = useContext(ShopContext);
 
-  const fetchProductData = async () => {
+  const [productData, setProductData] = useState(null);
+  const [mainImage, setMainImage]     = useState("");
+  const [size, setSize]               = useState("");
 
-    products.map((item)=>{
-      if(item._id === productId){
-        setProductData(item)
-        setImage(item.image[0])
-      
-        return null;
-      }
+  // Zoom lens state
+  const [lensVisible, setLensVisible] = useState(false);
+  const [lensStyle, setLensStyle]     = useState({});
+  const containerRef                  = useRef(null);
 
-    })
+  useEffect(() => {
+    const prod = products.find((p) => p._id === productId);
+    if (prod) {
+      setProductData(prod);
+      const cover     = prod.coverImage?.url;
+      const firstOther = prod.images?.[0]?.url;
+      setMainImage(cover || firstOther || "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [productId, products]);
 
-  }
-useEffect(()=>{
-  fetchProductData();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-},[productId, products])
+  if (!productData) return null;
 
-  return productData ? (
-    <div className='border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100 '>
-      {/**-------Product Data------ */}
-      <div className='flex gap-12 sm:gap-12 flex-col sm:flex-row'>
-      
+  const thumbs = [
+    ...(productData.coverImage ? [productData.coverImage.url] : []),
+    ...(productData.images?.map((i) => i.url) || []),
+  ];
 
-      {/**--------Product images------- */}
-      <div className='flex-1 flex flex-col-reverse gap-3 sm:flex-row min-h-[20rem] max-h-[56rem] overflow-y-auto'>
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } =
+      containerRef.current.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
 
-        <div className='flex sm:flex-col overflow-x-auto sm:overflow-y-scroll sm:justify-normal sm:w-[18.7%] w-full'>
-          {
-            productData.image.map((item,index)=>(
-              <img onClick={()=>setImage(item)} src={item} key={index} className='w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer ' alt='' />
-            )) 
-          }
-        </div>
-        <div className='w-full; sm:w-[80%]'>
-          <img className='w-full h-auto' src={image} alt='' />
+    // prevent lens going out
+    const px = Math.max(0, Math.min(x / width * 100, 100));
+    const py = Math.max(0, Math.min(y / height * 100, 100));
 
-        </div>
+    setLensStyle({
+      display: "block",
+      backgroundImage: `url(${mainImage})`,
+      backgroundSize: `${width * 1.2}px ${height * 1.2}px`,
+      backgroundPosition: `${px}% ${py}%`,
+      left: x - 75,
+      top: y - 75,
+    });
+  };
 
-      </div>
-      
-      {/**-------Product info------ */}
-      <div className='flex-1'>
-        <h1 className='font-medium text-2xl mt-2'>{productData.name}</h1>
-        <div className='flex items-center gap-1 mt-2'>
-          <img src={assets.star_icon} alt="" className='w-3.5'/>
-          <img src={assets.star_icon} alt="" className='w-3.5'/>
-          <img src={assets.star_icon} alt="" className='w-3.5'/>
-          <img src={assets.star_icon} alt="" className='w-3.5'/>
-          <img src={assets.star_icon} alt="" className='w-3.5'/>
-          {/* <p className='p1-2'>(122)</p> */}
-
-        </div>
-        <p className='mt-5 text-3xl font-medium'>{currency}{productData.price}</p>
-        <p className='mt-5 text-gray-500 md:w-4/5 '>{productData.description}</p>
-        <div className='flex flex-col gap-4 my-8'>
-          <p>Select Size</p>
-          <div className='flex gap-2'>
-            {productData.sizes.map((item,index)=>(
-              <button onClick={()=>setSize(item)} className={`border py-2 px-4 bg-gray-100 ${item === size ? 'border-orange-500':''}`}  key={index}>{item}</button>
+  return (
+    <div className="border-t-2 pt-10">
+      <div className="flex flex-col sm:flex-row gap-12">
+        {/* Images */}
+        <div className="flex-1 flex flex-col-reverse sm:flex-row gap-3 min-h-[20rem] max-h-[56rem]">
+          {/* Thumbnails */}
+          <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-scroll sm:w-[18.7%] w-full">
+            {thumbs.map((url, idx) => (
+              <img
+                key={idx}
+                onClick={() => setMainImage(url)}
+                src={url}
+                alt={`${productData.name} ${idx}`}
+                className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer"
+              />
             ))}
           </div>
 
+          {/* Main image + zoom */}
+          <div
+            ref={containerRef}
+            className="w-full sm:w-[80%] relative flex items-center justify-center"
+            onMouseEnter={() => setLensVisible(true)}
+            onMouseLeave={() => setLensVisible(false)}
+            onMouseMove={handleMouseMove}
+          >
+            <img
+              src={mainImage}
+              alt={productData.name}
+              className="w-full h-full object-contain"
+            />
+            {lensVisible && (
+              <div
+                className="absolute w-[150px] h-[150px] border border-gray-300 rounded-full pointer-events-none"
+                style={lensStyle}
+              />
+            )}
+          </div>
         </div>
-        <button onClick={()=>addToCart(productData._id,size)} className='bg-black text-white px-8 py-3 text-sm active:bg-gray-700'>ADD TO CART</button>
-        <hr className='mt-8 sm:w-4/5'/>
-        <div className='text-sm text-gray-500 mt-5 flex flex-col gap-1'>
-          <p>100% Original product </p>
-          <p>Cash on Delivery</p>
-          <p>Easy return and exchange within 7 days.</p>
 
+        {/* Details */}
+        <div className="flex-1">
+          <h1 className="font-medium text-2xl mt-2">{productData.name}</h1>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1 mt-2">
+            {[...Array(5)].map((_, i) => (
+              <img key={i} src={assets.star_icon} className="w-3.5" alt="star" />
+            ))}
+          </div>
+
+          <p className="mt-5 text-3xl font-medium">
+            {currency}{productData.price}
+          </p>
+          <p className="mt-5 text-gray-500 md:w-4/5">
+            {productData.description}
+          </p>
+
+          {/* Size selector */}
+          <div className="flex flex-col gap-4 my-8">
+            <p>Select Size</p>
+            <div className="flex gap-2 flex-wrap">
+              {productData.sizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSize(s)}
+                  className={`border py-2 px-4 bg-gray-100 ${
+                    s === size ? "border-orange-500" : ""
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => addToCart(productData._id, size)}
+            className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700"
+          >
+            ADD TO CART
+          </button>
+
+          <hr className="mt-8 sm:w-4/5" />
+
+          <div className="text-sm text-gray-500 mt-5 flex flex-col gap-1">
+            <p>100% Original product</p>
+            <p>Cash on Delivery</p>
+            <p>Easy return and exchange within 7 days.</p>
+          </div>
         </div>
-
       </div>
-      </div>
-      {/**------Description and review section------- */}
-      <div className='mt-20'>
-        <div className='flex'>
-          <b className='border px-5 py-3 text-sm'> Description</b>
-          {/* <p className='border px-5 py-3 text-sm'>Reviews(122)</p> */}
 
+      {/* Description */}
+      <div className="mt-20">
+        <div className="flex">
+          <b className="border px-5 py-3 text-sm">Description</b>
         </div>
-        <div className='flex flex-col gap-4 border px-6 py-6 text-sm text-gray-500'>
-          <p>An e-commerce website is a online platform that facilitates the buyers to do shopping from there home itself.</p>
-          <p>E-commerce websites typically display products or services along with detailed reviews of the product</p>
-
+        <div className="border px-6 py-6 text-sm text-gray-500">
+          <p>{productData.description}</p>
         </div>
-
       </div>
-      {/**--------display related products----- */}
-      <Relatedproducts category={productData.category} subCategory={productData.subCategory}/>
-     
+
+      {/* Related */}
+      <Relatedproducts
+        category={productData.category}
+        subCategory={productData.subCategory}
+      />
     </div>
-  ) : <div className='opacity-0'></div>
-}
+  );
+};
 
-export default Product
+export default Product;

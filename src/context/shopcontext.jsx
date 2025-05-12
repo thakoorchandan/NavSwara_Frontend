@@ -1,190 +1,388 @@
-import { createContext, useState } from "react";
+// frontend/src/context/shopcontext.jsx
 
+import { createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"
-import { useEffect } from "react";
+import axios from "axios";
 
+export const ShopContext = createContext();
 
- export const ShopContext = createContext();
+const ShopContextProvider = ({ children }) => {
+  const currency = "₹";
+  const delivery_fee = 10;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate();
 
- const  ShopContextProvider= ({children}) => {
+  // — GLOBAL LOADING STATE —
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  // combined flag
+  const loading =
+    loadingProducts ||
+    loadingCart ||
+    loadingAddresses ||
+    loadingPayments ||
+    loadingOrders;
 
-    const currency = '₹';
-    const delivery_fee = 10;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
-    const [search,setSearch] = useState('');
-    const [showSearch, setShowSearch] =  useState(false)
-    const [cartItems, setCartItems] = useState({});
-    const [products, setProducts] = useState([]);
-    const [token, setToken] = useState('')
-    const navigate = useNavigate();
+  // Load token from localStorage, if any
+  const [token, _setToken] = useState(
+    () => localStorage.getItem("token") || ""
+  );
+  const [profile, setProfile] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState({});
+  const [addresses, setAddresses] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [orders, setOrders] = useState([]);
 
-    const addToCart = async (itemId,size) => {
-        if(!size) {
-            toast.error('Select Product Size');
-            return;
+  // Helper to build auth headers
+  const authHeaders = (tok) => {
+    const t = tok || token;
+    return t ? { headers: { token: t } } : {};
+  };
 
-        }
-
-        let cartData = structuredClone(cartItems);
-
-        if(cartData[itemId]) {
-            if(cartData[itemId][size]) {
-                cartData[itemId][size] += 1;
-
-            }
-            else{
-                cartData[itemId][size] = 1;
-            }
-
-        }
-        else{
-            cartData[itemId] = {};
-            cartData[itemId][size] = 1;
-        }
-        setCartItems(cartData);
-
-        if (token) {
-
-            try {
-                await axios.post(backendUrl+'/api/cart/add',{itemId, size},{headers:{token}})
-                
-            } catch (error) {
-
-                console.log(error)
-                toast.error(error.message)
-                
-            }
-            
-        }
-
+  // Persist token + fetch user data when setting
+  const setToken = (t) => {
+    _setToken(t);
+    if (t) {
+      localStorage.setItem("token", t);
+      getUserCart(t);
+      fetchAddresses(t);
+      fetchPayments(t);
+      fetchOrders(t);
+    } else {
+      localStorage.removeItem("token");
+      setCartItems({});
+      setAddresses([]);
+      setPayments([]);
+      setOrders([]);
+      setProfile(null);
     }
-    const getCartCount = () => {
-        let totalCount = 0;
-        for(const items in cartItems){
-           for(const item in cartItems[items]) {
-             try {
-                 if (cartItems[items][item] > 0) {
-                    totalCount += cartItems[items][item];
-                 }
-             } catch (error){
+  };
 
-             }
-           }
-        }
-        return totalCount;
+  // — PROFILE —
+  const fetchProfile = async (tok = token) => {
+    if (!tok) return;
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/user/me`, {
+        headers: { token: tok },
+      });
+      if (data.success) setProfile(data.user);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load profile");
     }
+  };
 
-    const updateQuantity = async (itemId,size,quantity) => {
-        let cartData = structuredClone(cartItems);
-
-        cartData[itemId][size] = quantity;
-
-        setCartItems(cartData)
-
-        if (token)  {
-
-            try {
-                await axios.post(backendUrl+ '/api/cart/update', {itemId,size,quantity}, {headers:{token}})
-                
-            } catch (error) {
-
-                console.log(error)
-                toast.error(error.message)
-                
-                
-            }
-            
-        }
-
+  // — PRODUCTS —
+  const getProductsData = async () => {
+    setLoadingProducts(true);
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/product/list`);
+      if (data.success) {
+        setProducts(data.products);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch products");
+    } finally {
+      setLoadingProducts(false);
     }
+  };
 
-    const getCartAmount = () => {
-        let totalAmount =0;
-        for(const items in cartItems) {
-            let itemInfo = products.find((product)=> product._id === items );
-            for(const item in cartItems[items]) {
-                try{
-                    if(cartItems[items][item] >0) {
-                        totalAmount += itemInfo.price * cartItems[items][item];
-
-                    }
-
-                } catch (error) {
-
-                }
-            }
-        }
-        return totalAmount;
+  // — CART —
+  const getUserCart = async (tok) => {
+    const headers = authHeaders(tok);
+    if (!headers.headers) return;
+    setLoadingCart(true);
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/cart/get`,
+        {},
+        headers
+      );
+      if (data.success) {
+        setCartItems(data.cartData || {});
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load cart");
+    } finally {
+      setLoadingCart(false);
     }
+  };
 
-     const getProductsData = async () =>{
-
-        try {
-            const response = await axios.get(backendUrl + '/api/product/list')
-            if(response.data.success) {
-                setProducts(response.data.products)
-            } else{
-                toast.error(response.data.message)
-            }
-            
-        } catch (error) {
-
-            console.log(error)
-            toast.error(error.message)
-            
-        }
-
-     }
-
-    const getUserCart = async(token)=> {
-        try {
-            const response = await axios.post(backendUrl+'/api/cart/get', {}, {headers:(token)} )
-
-            if (response.data.success) {
-                setCartItems(response.data.cartData)
-                
-            }
-        } catch (error) {
-
-            console.log(error)
-            toast.error(error.message)
-            
-            
-        }
+  const addToCart = async (itemId, size) => {
+    if (!size) {
+      toast.error("Select Product Size");
+      return;
     }
-
-     useEffect(()=>{
-       getProductsData()
-
-     },[])
-
-    useEffect(()=>{
-        if (!token && localStorage.getItem('token')) {
-
-            setToken(localStorage.getItem('token'))
-            getUserCart(localStorage.getItem('token'))
-            
-        }
-
-    },[])
-
-
-    const value = {
-        products,currency,delivery_fee,
-        search,setSearch,showSearch,setShowSearch,
-        cartItems,addToCart,setCartItems,
-        getCartCount,updateQuantity,
-        getCartAmount, navigate, backendUrl,
-        setToken, token
-
+    // Local update
+    setCartItems((prev) => {
+      const c = { ...prev };
+      c[itemId] = c[itemId] || {};
+      c[itemId][size] = (c[itemId][size] || 0) + 1;
+      return c;
+    });
+    // Server sync
+    setLoadingCart(true);
+    try {
+      await axios.post(
+        `${backendUrl}/api/cart/add`,
+        { itemId, size },
+        authHeaders()
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not sync cart");
+    } finally {
+      setLoadingCart(false);
     }
-    return (
-        <ShopContext.Provider value={value}>
-            {children}
-        </ShopContext.Provider>
-    )
- }
+  };
 
- export default ShopContextProvider;
+  const updateQuantity = async (itemId, size, quantity) => {
+    // Local update
+    setCartItems((prev) => {
+      const c = { ...prev };
+      if (quantity <= 0) {
+        delete c[itemId][size];
+        if (!Object.keys(c[itemId] || {}).length) {
+          delete c[itemId];
+        }
+      } else {
+        c[itemId] = c[itemId] || {};
+        c[itemId][size] = quantity;
+      }
+      return c;
+    });
+    // Server update
+    setLoadingCart(true);
+    try {
+      await axios.post(
+        `${backendUrl}/api/cart/update`,
+        { itemId, size, quantity },
+        authHeaders()
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not update cart");
+    } finally {
+      setLoadingCart(false);
+    }
+  };
+
+  const getCartCount = () =>
+    Object.values(cartItems).reduce(
+      (sum, sizes) => sum + Object.values(sizes).reduce((a, b) => a + b, 0),
+      0
+    );
+
+  const getCartAmount = () =>
+    Object.entries(cartItems).reduce((sum, [pid, sizes]) => {
+      const prod = products.find((p) => p._id === pid);
+      if (!prod) return sum;
+      return (
+        sum +
+        Object.entries(sizes).reduce((s, [, qty]) => s + prod.price * qty, 0)
+      );
+    }, 0);
+
+  // — ADDRESSES —
+  const fetchAddresses = async (tok) => {
+    setLoadingAddresses(true);
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/user/me/addresses`,
+        authHeaders(tok)
+      );
+      if (data.success) {
+        setAddresses(data.addresses);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load addresses");
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
+  const addAddress = async (address) => {
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/me/addresses`,
+        address,
+        authHeaders()
+      );
+      if (data.success) {
+        setAddresses((prev) => [...prev, data.address]);
+        toast.success("Address added");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not add address");
+    }
+  };
+
+  const updateAddress = async (index, updates) => {
+    try {
+      const { data } = await axios.put(
+        `${backendUrl}/api/user/me/addresses/${index}`,
+        updates,
+        authHeaders()
+      );
+      if (data.success) {
+        setAddresses((prev) =>
+          prev.map((a, i) => (i === +index ? data.address : a))
+        );
+        toast.success("Address updated");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not update address");
+    }
+  };
+
+  const deleteAddress = async (index) => {
+    try {
+      const { data } = await axios.delete(
+        `${backendUrl}/api/user/me/addresses/${index}`,
+        authHeaders()
+      );
+      if (data.success) {
+        setAddresses((prev) => prev.filter((_, i) => i !== +index));
+        toast.success("Address removed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not delete address");
+    }
+  };
+
+  // — PAYMENT METHODS —
+  const fetchPayments = async (tok) => {
+    setLoadingPayments(true);
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/user/me/payments`,
+        authHeaders(tok)
+      );
+      if (data.success) {
+        setPayments(data.paymentMethods);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load payment methods");
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
+  const addPaymentMethod = async (method) => {
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/me/payments`,
+        method,
+        authHeaders()
+      );
+      if (data.success) {
+        setPayments((prev) => [...prev, data.paymentMethod]);
+        toast.success("Payment method added");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not add payment method");
+    }
+  };
+
+  const deletePaymentMethod = async (index) => {
+    try {
+      const { data } = await axios.delete(
+        `${backendUrl}/api/user/me/payments/${index}`,
+        authHeaders()
+      );
+      if (data.success) {
+        setPayments((prev) => prev.filter((_, i) => i !== +index));
+        toast.success("Payment method removed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not delete payment method");
+    }
+  };
+
+  // — ORDERS —
+  const fetchOrders = async (tok) => {
+    setLoadingOrders(true);
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/user/me/orders`,
+        authHeaders(tok)
+      );
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load orders");
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  // Effects
+  useEffect(() => {
+    getProductsData();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      getUserCart();
+      fetchAddresses();
+      fetchPayments();
+      fetchOrders();
+      fetchProfile();
+    }
+  }, [token]);
+
+  return (
+    <ShopContext.Provider
+      value={{
+        backendUrl,
+        currency,
+        delivery_fee,
+        token,
+        setToken,
+        profile,
+        fetchProfile,
+        products,
+        cartItems,
+        addToCart,
+        updateQuantity,
+        getCartCount,
+        getCartAmount,
+        addresses,
+        addAddress,
+        fetchAddresses,
+        updateAddress,
+        deleteAddress,
+        payments,
+        addPaymentMethod,
+        deletePaymentMethod,
+        orders,
+        fetchOrders,
+        navigate,
+        // expose combined loading flag
+        loading,
+      }}
+    >
+      {children}
+    </ShopContext.Provider>
+  );
+};
+
+export default ShopContextProvider;

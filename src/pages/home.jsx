@@ -14,10 +14,6 @@ const Home = () => {
 
   return (
     <div className={`${theme === "dark" ? "dark:text-gray-200 dark:bg-gray-900" : "bg-white text-black"}`}>
-      {/* Theme Toggle Button */}
- 
-
-      {/* Components with theme prop passed down */}
       <Hero theme={theme} />
       <LatestCollection theme={theme} />
       <Bestseller theme={theme} />

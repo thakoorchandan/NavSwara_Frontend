@@ -1,18 +1,17 @@
+// src/pages/Cart.jsx
+
 import { useEffect, useState, useContext } from "react";
 import Title from "../components/title";
 import { ShopContext } from "../context/shopcontext";
 import { assets } from "../assets/assets";
 import CartTotal from "../components/carttotal";
+import { Empty, Button } from "antd";
+import { ShoppingCartOutlined } from "@ant-design/icons";
 
 const Cart = () => {
   const { products, currency, cartItems, updateQuantity, navigate } = useContext(ShopContext);
-
   const [cartData, setCartData] = useState([]);
   const [theme, setTheme] = useState("light"); // Default theme is light
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
 
   useEffect(() => {
     if (products.length > 0) {
@@ -32,15 +31,49 @@ const Cart = () => {
     }
   }, [cartItems, products]);
 
+  // If cart is empty, show a beautiful empty state
+  if (cartData.length === 0) {
+    return (
+      <div
+        className={`border-t pt-14 min-h-[48vh] flex flex-col items-center justify-center ${
+          theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-700"
+        }`}
+      >
+        <Empty
+          image={<ShoppingCartOutlined style={{ fontSize: 64, color: theme === "dark" ? "#fff" : undefined }} />}
+          description={<span className="text-xl">Your cart is empty</span>}
+        >
+          <Button
+            type="primary"
+            size="large"
+            onClick={() => navigate("/")}
+          >
+            Start Shopping
+          </Button>
+        </Empty>
+      </div>
+    );
+  }
+
   return (
-    <div className={`${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-700"} border-t pt-14 min-h-screen`}>
- 
+    <div
+      className={`border-t pt-14 min-h-[48vh] ${
+        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-700"
+      }`}
+    >
       <div className="text-2xl mb-3">
         <Title text1={"YOUR"} text2={"CART"} />
       </div>
+
       <div>
         {cartData.map((item, index) => {
           const productData = products.find((product) => product._id === item._id);
+          if (!productData) return null;
+          const thumb =
+            productData.coverImage?.url ||
+            productData.images?.[0]?.url ||
+            assets.placeholder;
+
           return (
             <div
               key={index}
@@ -49,14 +82,23 @@ const Cart = () => {
               }`}
             >
               <div className="flex items-start gap-6">
-                <img className="w-16 sm:w-20" src={productData.image[0]} alt="" />
+                <img
+                  className="w-16 sm:w-20 object-cover"
+                  src={thumb}
+                  alt={productData.name}
+                />
                 <div>
                   <p className="text-xs sm:text-lg font-medium">{productData.name}</p>
                   <div className="flex items-center gap-5 mt-2">
-                    <p>{currency}{productData.price}</p>
+                    <p>
+                      {currency}
+                      {productData.price}
+                    </p>
                     <p
                       className={`px-2 sm:px-3 sm:py-1 border ${
-                        theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-slate-50 text-gray-700"
+                        theme === "dark"
+                          ? "bg-gray-800 text-gray-300"
+                          : "bg-slate-50 text-gray-700"
                       }`}
                     >
                       {item.size}
@@ -65,13 +107,14 @@ const Cart = () => {
                 </div>
               </div>
               <input
-                onChange={(e) =>
-                  e.target.value === "" || e.target.value === "0"
-                    ? null
-                    : updateQuantity(item._id, item.size, Number(e.target.value))
-                }
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  if (v > 0) updateQuantity(item._id, item.size, v);
+                }}
                 className={`border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1 ${
-                  theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-gray-700 border-gray-300"
+                  theme === "dark"
+                    ? "bg-gray-800 text-white border-gray-700"
+                    : "bg-white text-gray-700 border-gray-300"
                 }`}
                 type="number"
                 min={1}
@@ -81,12 +124,13 @@ const Cart = () => {
                 onClick={() => updateQuantity(item._id, item.size, 0)}
                 className="w-4 mr-4 sm:w-5 cursor-pointer"
                 src={assets.bin_icon}
-                alt=""
+                alt="Remove"
               />
             </div>
           );
         })}
       </div>
+
       <div className="flex justify-end my-20">
         <div className="w-full sm:w-[450px]">
           <CartTotal />
