@@ -1,22 +1,16 @@
-import Bestseller from '../components/bestseller';
+import Sections from '../components/sections';
 import Hero from '../components/hero';
-import LatestCollection from '../components/latestcollection';
 import Ourpolicy from '../components/ourpolicy';
 import Newsletterbox from '../components/newsletterbox';
 import { useState } from 'react';
 
 const Home = () => {
-  const [theme, setTheme] = useState("light"); // Theme state
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
+  const [theme, setTheme] = useState("light");
 
   return (
     <div className={`${theme === "dark" ? "dark:text-gray-200 dark:bg-gray-900" : "bg-white text-black"}`}>
       <Hero theme={theme} />
-      <LatestCollection theme={theme} />
-      <Bestseller theme={theme} />
+      <Sections theme={theme} />   {/* DYNAMIC! */}
       <Ourpolicy theme={theme} />
       <Newsletterbox theme={theme} />
     </div>

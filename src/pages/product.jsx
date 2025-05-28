@@ -10,19 +10,19 @@ const Product = () => {
   const { products, currency, addToCart } = useContext(ShopContext);
 
   const [productData, setProductData] = useState(null);
-  const [mainImage, setMainImage]     = useState("");
-  const [size, setSize]               = useState("");
+  const [mainImage, setMainImage] = useState("");
+  const [size, setSize] = useState("");
 
   // Zoom lens state
   const [lensVisible, setLensVisible] = useState(false);
-  const [lensStyle, setLensStyle]     = useState({});
-  const containerRef                  = useRef(null);
+  const [lensStyle, setLensStyle] = useState({});
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const prod = products.find((p) => p._id === productId);
     if (prod) {
       setProductData(prod);
-      const cover     = prod.coverImage?.url;
+      const cover = prod.coverImage?.url;
       const firstOther = prod.images?.[0]?.url;
       setMainImage(cover || firstOther || "");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -43,8 +43,8 @@ const Product = () => {
     const y = e.clientY - top;
 
     // prevent lens going out
-    const px = Math.max(0, Math.min(x / width * 100, 100));
-    const py = Math.max(0, Math.min(y / height * 100, 100));
+    const px = Math.max(0, Math.min((x / width) * 100, 100));
+    const py = Math.max(0, Math.min((y / height) * 100, 100));
 
     setLensStyle({
       display: "block",
@@ -55,6 +55,20 @@ const Product = () => {
       top: y - 75,
     });
   };
+
+  // -- NEW DATA --
+  const {
+    bestSeller,
+    inStock,
+    averageRating,
+    reviewCount,
+    tags = [],
+    brand,
+    category,
+    subCategory,
+    color = [],
+    sizes = [],
+  } = productData;
 
   return (
     <div className="border-t-2 pt-10">
@@ -98,17 +112,84 @@ const Product = () => {
 
         {/* Details */}
         <div className="flex-1">
+
+          {/* --- NEW: Badges for stock & bestseller --- */}
+          <div className="flex gap-2 mb-2">
+            {bestSeller && (
+              <span className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-2 py-0.5 text-xs rounded font-bold tracking-wide">
+                Best Seller
+              </span>
+            )}
+            <span
+              className={`px-2 py-0.5 text-xs rounded font-bold border ${
+                inStock
+                  ? "bg-green-100 text-green-800 border-green-300"
+                  : "bg-gray-200 text-gray-500 border-gray-300"
+              }`}
+            >
+              {inStock ? "In Stock" : "Out of Stock"}
+            </span>
+          </div>
+
           <h1 className="font-medium text-2xl mt-2">{productData.name}</h1>
+
+          {/* --- NEW: Brand, Category, SubCategory Badges --- */}
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {brand && (
+              <span className="bg-yellow-50 border border-yellow-300 text-yellow-700 px-2 py-0.5 text-xs rounded">
+                {brand}
+              </span>
+            )}
+            {category && (
+              <span className="bg-blue-50 border border-blue-300 text-blue-700 px-2 py-0.5 text-xs rounded">
+                {category}
+              </span>
+            )}
+            {subCategory && (
+              <span className="bg-pink-50 border border-pink-300 text-pink-700 px-2 py-0.5 text-xs rounded">
+                {subCategory}
+              </span>
+            )}
+          </div>
+
+          {/* --- NEW: Tags --- */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-yellow-50 border border-yellow-300 text-yellow-600 px-2 py-0.5 rounded text-xs"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Rating */}
           <div className="flex items-center gap-1 mt-2">
+            {/* Show rating as stars and value */}
             {[...Array(5)].map((_, i) => (
-              <img key={i} src={assets.star_icon} className="w-3.5" alt="star" />
+              <img
+                key={i}
+                src={assets.star_icon}
+                className={`w-3.5 ${i < Math.round(averageRating) ? "" : "opacity-30"}`}
+                alt="star"
+              />
             ))}
+            <span className="text-yellow-800 font-bold ml-1">
+              {averageRating ? averageRating.toFixed(1) : "0"}
+            </span>
+            {reviewCount > 0 && (
+              <span className="text-xs text-gray-500 ml-2">
+                ({reviewCount} review{reviewCount > 1 ? "s" : ""})
+              </span>
+            )}
           </div>
 
           <p className="mt-5 text-3xl font-medium">
-            {currency}{productData.price}
+            {currency}
+            {productData.price}
           </p>
           <p className="mt-5 text-gray-500 md:w-4/5">
             {productData.description}
@@ -118,7 +199,7 @@ const Product = () => {
           <div className="flex flex-col gap-4 my-8">
             <p>Select Size</p>
             <div className="flex gap-2 flex-wrap">
-              {productData.sizes.map((s) => (
+              {sizes.map((s) => (
                 <button
                   key={s}
                   onClick={() => setSize(s)}
@@ -160,10 +241,7 @@ const Product = () => {
       </div>
 
       {/* Related */}
-      <Relatedproducts
-        category={productData.category}
-        subCategory={productData.subCategory}
-      />
+      <Relatedproducts product={productData} />
     </div>
   );
 };

@@ -1,58 +1,64 @@
-// src/components/Latestcollection.jsx
-import { useContext, useEffect, useState } from "react";
+import { useContext, useMemo } from "react";
 import { ShopContext } from "../context/shopcontext";
 import Title from "./title";
 import Productitem from "./productitem";
 
-const Latestcollection = ({ theme }) => {
-  const { products } = useContext(ShopContext);
-  const [latestProducts, setLatestProducts] = useState([]);
+const RelatedProducts = ({ product }) => {
+  const { products, loading } = useContext(ShopContext);
 
-  useEffect(() => {
-    // filter out bestsellers
-    const nonBestSeller = products.filter((p) => !p.bestSeller);
-    setLatestProducts(nonBestSeller.slice(0, 10));
-  }, [products]);
+  // Related: at least one tag matches, and not the same product
+  const related = useMemo(() => {
+    if (!product?._id || !Array.isArray(product?.tags) || product?.tags.length === 0) return [];
+    if (!Array.isArray(products)) return [];
+
+    return products?.filter((p) =>
+      p?._id !== product._id &&
+      Array.isArray(p?.tags) &&
+      p.tags.some((tag) => product.tags.includes(tag))
+    );
+  }, [product, products]);
+
+  if (!product) return null;
+
+  if (loading || !products) {
+    return (
+      <div className="py-12 text-center text-lg">
+        <div className="w-12 h-12 border-4 rounded-full animate-spin border-t-yellow-400 border-gray-300 mx-auto" />
+        <div className="mt-4">Loading related products...</div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`pt-5 ${
-        theme === "dark"
-          ? "bg-gray-900 text-gray-200"
-          : "bg-white text-gray-700"
-      }`}
-    >
-      {/* Title Section */}
-      <div className="text-center py-8 text-3xl">
-        <Title text1="LATEST" text2="COLLECTIONS" />
-        <p
-          className={`w-3/4 mx-auto text-xs sm:text-sm md:text-base ${
-            theme === "dark" ? "text-gray-400" : "text-gray-600"
-          }`}
-        >
-          Explore our latest arrivals, carefully curated to bring you the best
-          in quality and style.
-        </p>
+    <div className={`pt-6 ${"bg-white text-gray-700"}`}>
+      <div className="text-center py-6 text-2xl">
+        <Title text1="RELATED" text2="PRODUCTS" />
+        { related?.length > 0 && <p className={`w-3/4 mx-auto text-xs sm:text-sm md:text-base ${"text-gray-600"}`}>
+          You might also like these styles based on your selection.
+        </p>}
       </div>
-
-      {/* Products Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
-        {latestProducts.length > 0 ? (
-          latestProducts.map((p) => {
-            return (
-              <Productitem
-                key={p._id}
-                id={p._id}
-                name={p.name}
-                price={p.price}
-                cover={p.coverImage?.url}
-                gallery={p.images.map((i) => i.url)}
-              />
-            );
-          })
+        {related?.length > 0 ? (
+          related.map((p) => (
+            <Productitem
+              key={p._id}
+              id={p._id}
+              name={p.name}
+              price={p.price}
+              cover={p.coverImage?.url}
+              gallery={p.images?.map((i) => i.url)}
+              tags={p.tags}
+              averageRating={p.averageRating}
+              reviewCount={p.reviewCount}
+              inStock={p.inStock}
+              category={p.category}
+              brand={p.brand}
+              bestSeller={p.bestSeller}
+            />
+          ))
         ) : (
           <p className="col-span-full text-center text-sm sm:text-base mt-4">
-            No products available at the moment. Check back later!
+            No related products found. Try browsing more categories!
           </p>
         )}
       </div>
@@ -60,4 +66,4 @@ const Latestcollection = ({ theme }) => {
   );
 };
 
-export default Latestcollection;
+export default RelatedProducts;

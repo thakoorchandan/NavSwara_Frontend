@@ -19,6 +19,7 @@ const ShopContextProvider = ({ children }) => {
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [sections, setSections] = useState([]);
   // combined flag
   const loading =
     loadingProducts ||
@@ -92,6 +93,17 @@ const ShopContextProvider = ({ children }) => {
       toast.error("Failed to fetch products");
     } finally {
       setLoadingProducts(false);
+    }
+  };
+
+  // — SECTIONS —
+  const fetchSections = async () => {
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/section/list`);
+      if (data.success) setSections(data.sections || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load homepage sections");
     }
   };
 
@@ -337,6 +349,7 @@ const ShopContextProvider = ({ children }) => {
   // Effects
   useEffect(() => {
     getProductsData();
+    fetchSections();
   }, []);
 
   useEffect(() => {
@@ -369,6 +382,8 @@ const ShopContextProvider = ({ children }) => {
         addAddress,
         fetchAddresses,
         updateAddress,
+        sections,
+        fetchSections,
         deleteAddress,
         payments,
         addPaymentMethod,
@@ -376,7 +391,6 @@ const ShopContextProvider = ({ children }) => {
         orders,
         fetchOrders,
         navigate,
-        // expose combined loading flag
         loading,
       }}
     >

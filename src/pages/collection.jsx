@@ -252,7 +252,14 @@ const Collection = () => {
                   name={p.name}
                   price={p.price}
                   cover={p.coverImage?.url}
-                  gallery={p.images.map((i) => i.url)}
+                  gallery={p.images?.map((i) => i.url)}
+                  tags={p.tags}
+                  averageRating={p.averageRating}
+                  reviewCount={p.reviewCount}
+                  inStock={p.inStock}
+                  category={p.category}
+                  brand={p.brand}
+                  bestSeller={p.bestSeller}
                 />
               ))
             ) : (
