@@ -41,6 +41,7 @@ const Hero = () => {
         dots
         effect="fade"
         speed={700}
+        adaptiveHeight
         className="w-full"
       >
         {slides.map((slide, i) => (
@@ -82,8 +83,8 @@ const Hero = () => {
                   className="w-full h-full object-cover object-center transition-all duration-700 group-hover:scale-105"
                   draggable="false"
                   style={{
-                    minHeight: "500px",
-                    maxHeight: "650px",
+                    minHeight: "600px",
+                    maxHeight: "600px",
                     maxWidth: "100%",
                     objectFit: "cover",
                   }}
@@ -96,20 +97,20 @@ const Hero = () => {
                         e.stopPropagation();
                         carouselRef.current.prev();
                       }}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white bg-opacity-80 hover:bg-yellow-100 rounded-full p-2 shadow-lg transition"
+                      className="absolute left-3 top-1/2 z-20 bg-white bg-opacity-80 hover:bg-yellow-100 rounded-full p-2 shadow-lg transition"
                       aria-label="Previous"
                     >
-                      <ArrowLeftOutlined className="text-lg text-yellow-700" />
+                      <ArrowLeftOutlined />
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         carouselRef.current.next();
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white bg-opacity-80 hover:bg-yellow-100 rounded-full p-2 shadow-lg transition"
+                      className="absolute right-3 top-1/2 z-20 bg-white bg-opacity-80 hover:bg-yellow-100 rounded-full p-2 shadow-lg transition"
                       aria-label="Next"
                     >
-                      <ArrowRightOutlined className="text-lg text-yellow-700" />
+                      <ArrowRightOutlined />
                     </button>
                   </>
                 )}
