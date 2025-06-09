@@ -23,26 +23,26 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex items-center justify-between font-medium">
+    <div className="flex items-center justify-between font-medium pb-2.5">
       <Link to="/">
         <img src={assets.logo} className="w-36" alt="" />
       </Link>
 
       <div className="hidden sm:flex gap-5 text-sm text-gray-700 flex">
-        <NavLink to="/" className="flex flex-col items-center">
-          <p>HOME</p>
+        <NavLink to="/" className="flex flex-col items-center gap-1">
+          <span>HOME</span>
           <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
-        <NavLink to="/collection" className="flex flex-col items-center">
-          <p>COLLECTION</p>
+        <NavLink to="/collection" className="flex flex-col items-center gap-1">
+          <span>COLLECTION</span>
           <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
-        <NavLink to="/about" className="flex flex-col items-center">
-          <p>ABOUT</p>
+        <NavLink to="/about" className="flex flex-col items-center gap-1">
+          <span>ABOUT</span>
           <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
-        <NavLink to="/contact" className="flex flex-col items-center">
-          <p>CONTACT</p>
+        <NavLink to="/contact" className="flex flex-col items-center gap-1">
+          <span>CONTACT</span>
           <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
         </NavLink>
       </div>
