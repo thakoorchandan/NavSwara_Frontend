@@ -1,0 +1,14 @@
+.animate-spotlight {
+  background: radial-gradient(circle at 60% 40%, rgba(255, 255, 240, 0.75) 0%, rgba(255,255,255,0.2) 50%, transparent 90%);
+  transition: background-position 1.2s cubic-bezier(0.4,0.2,0.2,1);
+  animation: spotlightMove 8s ease-in-out infinite alternate;
+  filter: blur(0.5px);
+  z-index: 0;
+}
+
+@keyframes spotlightMove {
+  0%   { background-position: 30% 30%; }
+  40%  { background-position: 65% 35%; }
+  70%  { background-position: 45% 65%; }
+  100% { background-position: 60% 40%; }
+}

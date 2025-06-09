@@ -8,7 +8,7 @@ const Home = () => {
   const [theme, setTheme] = useState("light");
 
   return (
-    <div className={`${theme === "dark" ? "dark:text-gray-200 dark:bg-gray-900" : "bg-white text-black"}`}>
+    <div className={`${theme === "dark" ? "dark:text-gray-200 dark:bg-gray-900" : "text-black"}`}>
       <Hero theme={theme} />
       <Sections theme={theme} />   {/* DYNAMIC! */}
       <Ourpolicy theme={theme} />

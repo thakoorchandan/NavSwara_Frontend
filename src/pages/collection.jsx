@@ -175,7 +175,7 @@ const Collection = () => {
   );
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 pt-10 border-t">
+    <div className="flex flex-col sm:flex-row gap-4 pt-10">
       {/* ── Sidebar (desktop only, toggleable) ──────────── */}
       <aside
         className={`
