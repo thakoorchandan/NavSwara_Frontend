@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 const Newsletterbox = ({theme}) => {
   const onSubmitHandler = (event) => {
     event.preventDefault();

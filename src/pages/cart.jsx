@@ -11,7 +11,7 @@ import { ShoppingCartOutlined } from "@ant-design/icons";
 const Cart = () => {
   const { products, currency, cartItems, updateQuantity, navigate } = useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
-  const [theme, setTheme] = useState("light"); // Default theme is light
+  const [theme] = useState("light"); // Default theme is light
 
   useEffect(() => {
     if (products.length > 0) {

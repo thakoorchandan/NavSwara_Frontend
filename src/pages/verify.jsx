@@ -9,7 +9,8 @@ import Title from "../components/title";
 const Verify = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { backendUrl, token, setCartItems } = useContext(ShopContext);
+  const { backendUrl, token, setCartItems, fetchOrders } =
+    useContext(ShopContext);
 
   const [status, setStatus] = useState("loading"); // 'loading' | 'error' | 'success'
   const [error, setError]   = useState("");
@@ -34,6 +35,7 @@ const Verify = () => {
         if (res.data.success) {
           // only clear cart once payment is truly confirmed
           setCartItems({});
+          if (token) fetchOrders();
           setStatus("success");
         } else {
           setError(res.data.message || "Verification failed");
@@ -44,7 +46,8 @@ const Verify = () => {
         setError(err.response?.data?.message || err.message);
         setStatus("error");
       });
-  }, [backendUrl, token, searchParams, setCartItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backendUrl, token, searchParams]);
 
   if (status === "loading") {
     return (

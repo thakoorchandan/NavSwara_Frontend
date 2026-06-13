@@ -1,5 +1,5 @@
 // src/pages/Collection.jsx
-import React, { useContext, useEffect, useState, useMemo } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import { ShopContext } from "../context/shopcontext";
 import Title from "../components/title";
 import Productitem from "../components/productitem";
@@ -235,8 +235,23 @@ const Collection = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="w-16 h-16 border-4 rounded-full border-t-blue-500 animate-spin" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex flex-col rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden animate-pulse"
+              >
+                <div className="aspect-square w-full bg-gray-200" />
+                <div className="flex flex-col gap-2 p-3">
+                  <div className="h-4 w-4/5 rounded bg-gray-200" />
+                  <div className="h-3 w-2/5 rounded bg-gray-200" />
+                  <div className="mt-2 flex items-center justify-between">
+                    <div className="h-5 w-16 rounded bg-gray-200" />
+                    <div className="h-3 w-10 rounded bg-gray-200" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div

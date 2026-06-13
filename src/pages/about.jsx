@@ -4,11 +4,7 @@ import Newsletterbox from "../components/newsletterbox";
 import Title from "../components/title";
 
 const About = () => {
-  const [theme, setTheme] = useState("light"); // Default theme is light
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
+  const [theme] = useState("light"); // Default theme is light
 
   return (
     <div className={`${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-800"} min-h-screen`}>
@@ -44,7 +40,7 @@ const About = () => {
         <div className={`bordr px-10 md:px-16 py-8 sm:py-20 flex flex-col gap-5 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
           <b>Convenience</b>
           <p>
-            Our goal is to make shopping as convenient as possible, offering seamless online experiences and fast, reliable delivery. Whether you're browsing from home or on the go, we ensure that your shopping journey is effortless and enjoyable.
+            Our goal is to make shopping as convenient as possible, offering seamless online experiences and fast, reliable delivery. Whether you&apos;re browsing from home or on the go, we ensure that your shopping journey is effortless and enjoyable.
           </p>
         </div>
         <div className={`bordr px-10 md:px-16 py-8 sm:py-20 flex flex-col gap-5 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>

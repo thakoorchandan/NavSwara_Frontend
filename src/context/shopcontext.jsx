@@ -35,6 +35,9 @@ const ShopContextProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({});
+
+  // — SEARCH —
+  const [search, setSearch] = useState("");
   const [addresses, setAddresses] = useState([]);
   const [payments, setPayments] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -374,10 +377,13 @@ const ShopContextProvider = ({ children }) => {
         fetchProfile,
         products,
         cartItems,
+        setCartItems,
         addToCart,
         updateQuantity,
         getCartCount,
         getCartAmount,
+        search,
+        setSearch,
         addresses,
         addAddress,
         fetchAddresses,

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 // Luxe Gold (glittery)
 const GOLD = "linear-gradient(90deg, #FFD700 20%, #FFA500 80%)";
-const GOLD_SOLID = "#E6B800";
 
 const Star = ({ filled }) => (
   <svg

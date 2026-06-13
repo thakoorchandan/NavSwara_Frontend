@@ -1,6 +1,6 @@
 // frontend/src/pages/user.jsx
 
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Card,
   Descriptions,
@@ -125,7 +125,7 @@ export default function UserPage() {
 
       setIsModalVisible(false);
       fetchAddresses();
-    } catch (err) {
+    } catch {
       // validation errors handled by Form
     }
   };

@@ -2,10 +2,10 @@
 
 import Title from "../components/title";
 import { ShopContext } from "../context/shopcontext";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 
 const Orders = () => {
-  const { token, currency, products, orders, fetchOrders } =
+  const { token, currency, products, orders, fetchOrders, loading } =
     useContext(ShopContext);
 
 
@@ -26,7 +26,7 @@ const Orders = () => {
   // Build a flat list of order items:
   const orderItems = orders
     .flatMap((order) =>
-      order.items.map((item) => ({
+      (order.items || []).map((item) => ({
         // original item fields
         name: item.name,
         quantity: item.quantity,
@@ -36,7 +36,7 @@ const Orders = () => {
           products.find((p) => p._id === item.product)?.coverImage?.url || "",
         // from order
         status: order.status,
-        paymentMethod: order.paymentDetail.method,
+        paymentMethod: order.paymentDetail?.method || "—",
         date: order.createdAt,
       }))
     )
@@ -55,6 +55,22 @@ const Orders = () => {
       </div>
 
       <div className="mt-8 space-y-4">
+        {loading && orderItems.length === 0 &&
+          Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={`sk-${i}`}
+              className="py-4 border-t border-b px-4 md:px-8 flex items-center gap-6 animate-pulse"
+            >
+              <div className="w-16 sm:w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-1/2 rounded bg-gray-200" />
+                <div className="h-3 w-1/4 rounded bg-gray-200" />
+                <div className="h-3 w-1/3 rounded bg-gray-200" />
+              </div>
+              <div className="h-8 w-20 rounded bg-gray-200" />
+            </div>
+          ))}
+
         {orderItems.map((item, idx) => (
           <div
             key={idx}
@@ -96,22 +112,36 @@ const Orders = () => {
             </div>
 
             {/* Right: Status & refresh */}
-            <div className="md:w-1/2 flex justify-between items-center">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between md:justify-end gap-4 md:gap-8">
+              <span
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap ${
+                  item.status === "Delivered"
+                    ? "bg-green-50 text-green-700"
+                    : item.status === "Cancelled"
+                    ? "bg-red-50 text-red-700"
+                    : item.status === "Shipped" ||
+                      item.status === "Out for delivery"
+                    ? "bg-yellow-50 text-yellow-700"
+                    : "bg-blue-50 text-blue-700"
+                }`}
+              >
                 <span
-                  className={`block w-2 h-2 rounded-full ${
+                  className={`h-2 w-2 flex-shrink-0 rounded-full ${
                     item.status === "Delivered"
                       ? "bg-green-500"
-                      : item.status === "Shipped"
+                      : item.status === "Cancelled"
+                      ? "bg-red-500"
+                      : item.status === "Shipped" ||
+                        item.status === "Out for delivery"
                       ? "bg-yellow-400"
-                      : "bg-blue-400"
+                      : "bg-blue-500"
                   }`}
                 />
-                <p className="text-sm md:text-base">{item.status}</p>
-              </div>
+                {item.status}
+              </span>
               <button
                 onClick={handleFetchOrders}
-                className={`border px-4 py-2 text-sm font-medium rounded-sm hover:bg-gray-100`}
+                className="flex-shrink-0 border px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
               >
                 Refresh
               </button>
@@ -119,7 +149,7 @@ const Orders = () => {
           </div>
         ))}
 
-        {orderItems.length === 0 && (
+        {!loading && orderItems.length === 0 && (
           <p className="text-center text-gray-500">You have no orders yet.</p>
         )}
       </div>

@@ -5,7 +5,7 @@ import Newsletterbox from '../components/newsletterbox';
 import { useState } from 'react';
 
 const Home = () => {
-  const [theme, setTheme] = useState("light");
+  const [theme] = useState("light");
 
   return (
     <div className={`${theme === "dark" ? "dark:text-gray-200 dark:bg-gray-900" : "text-black"}`}>

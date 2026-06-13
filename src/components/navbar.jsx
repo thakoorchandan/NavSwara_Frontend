@@ -1,13 +1,17 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { assets } from "../assets/assets";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { ShopContext } from "../context/shopcontext";
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef(null);
+  const location = useLocation();
 
   const {
-    setShowSearch,
+    search,
+    setSearch,
     getCartCount,
     navigate,
     token,
@@ -20,6 +24,27 @@ const Navbar = () => {
     localStorage.removeItem("token");
     setToken("");
     setCartItems({});
+  };
+
+  // Smoothly expand/collapse the inline search input.
+  const toggleSearch = () => {
+    if (searchOpen) {
+      setSearchOpen(false);
+      setSearch("");
+    } else {
+      setSearchOpen(true);
+      // wait for the expand transition before focusing
+      setTimeout(() => searchRef.current?.focus(), 200);
+    }
+  };
+
+  // Search live: typing routes to the collection page so results filter as you type.
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    if (value && !location.pathname.includes("collection")) {
+      navigate("/collection");
+    }
   };
 
   return (
@@ -47,12 +72,37 @@ const Navbar = () => {
         </NavLink>
       </div>
       <div className="flex items-center gap-6">
-        <img
-          onClick={() => setShowSearch(true)}
-          src={assets.search_icon}
-          className="w-5 cursor-pointer"
-          alt=""
-        />
+        {/* Inline expanding search */}
+        <div className="flex items-center">
+          <div
+            className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
+              searchOpen
+                ? "w-36 sm:w-64 opacity-100 mr-2"
+                : "w-0 opacity-0 mr-0"
+            }`}
+          >
+            <input
+              ref={searchRef}
+              value={search}
+              onChange={handleSearchChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") navigate("/collection");
+                if (e.key === "Escape") toggleSearch();
+              }}
+              type="text"
+              placeholder="Search products..."
+              className="w-full border border-gray-300 rounded-full px-4 py-1.5 text-sm bg-gray-50 outline-none focus:border-gray-500"
+            />
+          </div>
+          <img
+            onClick={toggleSearch}
+            src={searchOpen ? assets.cross_icon : assets.search_icon}
+            className={`cursor-pointer transition-all ${
+              searchOpen ? "w-3.5" : "w-5"
+            }`}
+            alt="search"
+          />
+        </div>
 
         <div className="group relative">
           <img

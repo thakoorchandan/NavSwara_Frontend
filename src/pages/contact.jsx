@@ -4,11 +4,7 @@ import Newsletterbox from "../components/newsletterbox";
 import Title from "../components/title";
 
 const Contact = () => {
-  const [theme, setTheme] = useState("light"); // Default theme is light
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
+  const [theme] = useState("light"); // Default theme is light
 
   return (
     <div className={`${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-600"} min-h-screen`}>

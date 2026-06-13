@@ -15,6 +15,7 @@ const Placeorder = () => {
     token,
     cartItems,
     setCartItems,
+    fetchOrders,
     getCartAmount,
     delivery_fee,
     products,
@@ -85,8 +86,12 @@ const Placeorder = () => {
   };
 
   const initPay = (order) => {
+    if (!window.Razorpay) {
+      toast.error("Razorpay SDK failed to load. Please try again.");
+      return;
+    }
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: order.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
       currency: order.currency,
       name: "NavSwara Order",
@@ -100,10 +105,17 @@ const Placeorder = () => {
             { headers: { token } }
           );
           if (data.success) {
+            setCartItems({});
+            await fetchOrders();
+            toast.success("Payment successful!");
             navigate("/orders");
+          } else {
+            toast.error(data.message || "Payment verification failed");
           }
         } catch (err) {
-          toast.error(err.message || "Verification failed");
+          toast.error(
+            err.response?.data?.message || err.message || "Verification failed"
+          );
         }
       },
     };
@@ -180,8 +192,14 @@ const Placeorder = () => {
           payload,
           { headers: { token } }
         );
-        if (data.success) navigate("/orders");
-        else toast.error(data.message);
+        if (data.success) {
+          setCartItems({});
+          await fetchOrders();
+          toast.success("Order placed successfully!");
+          navigate("/orders");
+        } else {
+          toast.error(data.message);
+        }
       } else if (method === "razorpay") {
         const { data } = await axios.post(
           `${backendUrl}/api/order/razorpay`,
@@ -201,7 +219,7 @@ const Placeorder = () => {
         } else throw new Error(data.message || "Stripe checkout failed");
       }
     } catch (err) {
-      toast.error(err.message || "Order failed");
+      toast.error(err.response?.data?.message || err.message || "Order failed");
     }
   };
 
